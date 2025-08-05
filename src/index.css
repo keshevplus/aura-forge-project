@@ -178,6 +178,23 @@
     background: var(--gradient-primary);
   }
 
+  .gradient-text {
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hover-lift {
+    transition: var(--transition-smooth);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow);
+  }
+}
+
   .gradient-hero {
     background: var(--gradient-hero);
   }

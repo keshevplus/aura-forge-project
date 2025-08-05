@@ -1,122 +1,216 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { Phone, Calendar, MessageCircle } from 'lucide-react'
+import { Phone, Calendar, MessageCircle, Sparkles } from 'lucide-react'
+import { motion } from 'framer-motion'
 import professionalHeadshot from '@/assets/professional-headshot.jpg'
+import { useLanguage } from '@/hooks/useLanguage'
+import EnhancedNavigation from './EnhancedNavigation'
 
 const MedicalHero = () => {
+  const { t, language } = useLanguage();
+
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-background to-muted/20 overflow-hidden">
+    <section id="home" className="relative min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-primary opacity-10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-gradient-secondary opacity-10 rounded-full blur-2xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-bounce" />
+      </div>
+      
       {/* Navigation */}
-      <nav className="relative z-10 px-4 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">K+</span>
-            </div>
-            <span className="text-xl font-bold">Keshev Plus</span>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-foreground hover:text-primary transition-colors">אודותינו</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">שירותים</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">מה זה ADHD?</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">תהליך האבחון</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">שאלות נפוצות</a>
-            <a href="#" className="text-foreground hover:text-primary transition-colors">יצירת קשר</a>
-            <div className="flex items-center space-x-2 text-primary font-semibold">
-              <Phone className="w-4 h-4" />
-              <span>055-27-399-27</span>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <EnhancedNavigation />
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 pt-32">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
-          <div className="text-center lg:text-right" dir="rtl">
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
-              ברוכים הבאים למרפאת
+          <motion.div 
+            className={`text-center ${language === 'he' ? 'lg:text-right' : 'lg:text-left'}`}
+            dir={language === 'he' ? 'rtl' : 'ltr'}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.h1 
+              className="text-4xl lg:text-7xl font-bold mb-6 leading-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              {t('hero.title')}
               <br />
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                "קשב פלוס"
+              <span className="gradient-text relative">
+                {t('hero.clinic')}
+                <motion.div
+                  className="absolute -top-2 -right-2"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles className="w-8 h-8 text-primary" />
+                </motion.div>
               </span>
-            </h1>
+            </motion.h1>
             
-            <div className="mb-8">
-              <div className="inline-flex items-center bg-gradient-to-r from-primary to-secondary rounded-full p-1 mb-6">
-                <div className="bg-background rounded-full px-6 py-2">
-                  <span className="text-sm font-semibold">בילדים • בבני נוער • במבוגרים</span>
+            <motion.div 
+              className="mb-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <div className="inline-flex items-center bg-gradient-primary rounded-full p-1 mb-6 shadow-glow">
+                <div className="bg-background rounded-full px-6 py-3">
+                  <span className="text-sm font-semibold">{t('hero.subtitle')}</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <p className="text-xl lg:text-2xl text-muted-foreground mb-4 leading-relaxed">
-              ב"קשב פלוס" תקבלו אבחון מדויק
-              <br />
-              ותוכנית טיפול אישית
-            </p>
+            <motion.p 
+              className="text-xl lg:text-2xl text-muted-foreground mb-4 leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              {t('hero.description').split('\n').map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
+            </motion.p>
             
-            <p className="text-lg text-foreground mb-8 font-semibold">
-              הצעד הראשון מתחיל כאן
-            </p>
+            <motion.p 
+              className="text-lg text-foreground mb-8 font-semibold"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              {t('hero.step')}
+            </motion.p>
             
-            <p className="text-muted-foreground mb-8">
-              קבעו פגישת ייעוץ - בואו לגלות את הדרך להצלחה
-            </p>
+            <motion.p 
+              className="text-muted-foreground mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1 }}
+            >
+              {t('hero.consultation')}
+            </motion.p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end">
+            {/* Enhanced CTA Buttons */}
+            <motion.div 
+              className={`flex flex-col sm:flex-row gap-4 ${language === 'he' ? 'justify-center lg:justify-end' : 'justify-center lg:justify-start'}`}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
+            >
               <Button 
                 size="lg" 
-                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-8 py-6 text-lg"
+                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-8 py-6 text-lg hover-lift shadow-elegant"
+                onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                קראו עוד עלינו
+                {t('hero.read_more')}
               </Button>
               <Button 
                 variant="default"
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 text-lg"
+                className="bg-gradient-primary hover:opacity-90 text-primary-foreground font-semibold px-8 py-6 text-lg hover-lift shadow-glow"
+                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                התחל/י את האבחון עכשיו
+                {t('hero.start_diagnosis')}
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Professional Image */}
-          <div className="flex justify-center lg:justify-start">
-            <div className="relative">
+          <motion.div 
+            className={`flex justify-center ${language === 'he' ? 'lg:justify-start' : 'lg:justify-end'}`}
+            initial={{ opacity: 0, x: language === 'he' ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <div className="relative group">
+              <motion.div
+                className="absolute inset-0 bg-gradient-primary rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
               <img
                 src={professionalHeadshot}
-                alt="רופא מקצועי"
-                className="w-full max-w-md h-auto object-cover rounded-2xl shadow-strong"
+                alt={language === 'he' ? 'רופא מקצועי' : 'Professional Doctor'}
+                className="relative w-full max-w-md h-auto object-cover rounded-2xl shadow-strong hover-lift"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-secondary/10 rounded-2xl" />
+              
+              {/* Floating Elements */}
+              <motion.div
+                className="absolute -top-4 -right-4 w-8 h-8 bg-primary rounded-full shadow-glow"
+                animate={{ y: [-10, 10, -10] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute -bottom-4 -left-4 w-6 h-6 bg-secondary rounded-full shadow-glow"
+                animate={{ y: [10, -10, 10] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+              />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Bottom CTA Section */}
-      <div className="relative z-10 bg-primary py-16 mt-16">
-        <div className="max-w-4xl mx-auto text-center px-4" dir="rtl">
-          <h2 className="text-3xl lg:text-4xl font-bold text-primary-foreground mb-6">
-            מוכנים להתחיל?
-          </h2>
-          <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
-            פנה/י אלינו היום כדי לקבוע את האבחון שלך ולקחת את הצעד הראשון
-            <br />
-            לקראת חיים טובים יותר.
-          </p>
-          <Button 
-            size="lg"
-            className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-8 py-6 text-lg"
-          >
-            צרו קשר עכשיו
-          </Button>
+      {/* Enhanced Bottom CTA Section */}
+      <motion.div 
+        className="relative z-10 bg-gradient-primary py-20 mt-20"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent" />
         </div>
-      </div>
+        
+        <div className="relative max-w-4xl mx-auto text-center px-4" dir={language === 'he' ? 'rtl' : 'ltr'}>
+          <motion.h2 
+            className="text-3xl lg:text-5xl font-bold text-primary-foreground mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            {t('hero.ready_title')}
+          </motion.h2>
+          <motion.p 
+            className="text-xl text-primary-foreground/90 mb-8 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            {t('hero.ready_text').split('\n').map((line, i) => (
+              <span key={i}>
+                {line}
+                {i === 0 && <br />}
+              </span>
+            ))}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Button 
+              size="lg"
+              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold px-8 py-6 text-lg hover-lift shadow-elegant"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              {t('hero.contact_now')}
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
     </section>
   )
 }
