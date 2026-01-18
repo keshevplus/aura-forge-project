@@ -185,16 +185,6 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .hover-lift {
-    transition: var(--transition-smooth);
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-glow);
-  }
-}
-
   .gradient-hero {
     background: var(--gradient-hero);
   }
@@ -270,11 +260,16 @@
 
   /* Hover Effects */
   .hover-lift {
-    @apply transition-smooth hover:scale-105 hover:shadow-medium;
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-medium);
   }
 
   .hover-glow {
-    @apply transition-smooth;
+    @apply transition-all duration-300 ease-out;
   }
 
   .hover-glow:hover {
