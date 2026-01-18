@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Phone, Menu, X, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage';
+import logo from '@/assets/logo.png';
 
 const EnhancedNavigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,9 +11,10 @@ const EnhancedNavigation = () => {
   const { language, setLanguage, t } = useLanguage();
 
   const navItems = [
+    { href: '#home', label: language === 'he' ? 'בית' : 'Home' },
     { href: '#about', label: t('nav.about') },
     { href: '#services', label: t('nav.services') },
-    { href: '#adhd', label: t('nav.adhd') },
+    { href: '#adhd', label: language === 'he' ? 'הפרעות קשב' : 'ADHD' },
     { href: '#process', label: t('nav.process') },
     { href: '#faq', label: t('nav.faq') },
     { href: '#contact', label: t('nav.contact') },
@@ -27,11 +29,15 @@ const EnhancedNavigation = () => {
   }, []);
 
   const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsOpen(false);
+    if (href === '#home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
+    setIsOpen(false);
   };
 
   const toggleLanguage = () => {
@@ -44,71 +50,77 @@ const EnhancedNavigation = () => {
       animate={{ y: 0 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-background/95 backdrop-blur-md shadow-elegant border-b border-border' 
-          : 'bg-transparent'
+          ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
+          : 'bg-white/80 backdrop-blur-sm'
       }`}
+      dir={language === 'he' ? 'rtl' : 'ltr'}
     >
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.div 
-            className="flex items-center space-x-2"
+            className="flex items-center cursor-pointer"
             whileHover={{ scale: 1.05 }}
+            onClick={() => scrollToSection('#home')}
           >
-            <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center shadow-glow">
-              <span className="text-primary-foreground font-bold text-lg">K+</span>
-            </div>
-            <span className="text-xl font-bold gradient-text">Keshev Plus</span>
+            <img 
+              src={logo} 
+              alt="קשב פלוס" 
+              className="h-12 md:h-14 w-auto"
+            />
           </motion.div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center gap-6">
             {navItems.map((item) => (
               <motion.button
                 key={item.href}
                 onClick={() => scrollToSection(item.href)}
-                className="text-foreground hover:text-primary transition-all duration-300 relative group"
+                className="text-gray-700 hover:text-green-800 font-medium transition-all duration-300 relative group text-sm"
                 whileHover={{ y: -2 }}
               >
                 {item.label}
-                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary group-hover:w-full transition-all duration-300" />
+                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-800 group-hover:w-full transition-all duration-300" />
               </motion.button>
             ))}
             
             {/* Phone */}
-            <div className="flex items-center space-x-2 text-primary font-semibold bg-primary/10 px-4 py-2 rounded-full">
+            <a 
+              href="tel:055-27-399-27"
+              className="flex items-center gap-2 text-green-800 font-semibold bg-green-50 px-4 py-2 rounded-full hover:bg-green-100 transition-colors"
+            >
               <Phone className="w-4 h-4" />
               <span>055-27-399-27</span>
-            </div>
+            </a>
 
             {/* Language Toggle */}
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={toggleLanguage}
-              className="hover-lift"
+              className="border-green-800 text-green-800 hover:bg-green-800 hover:text-white transition-all"
             >
-              <Globe className="w-4 h-4 mr-2" />
-              {language.toUpperCase()}
+              <Globe className="w-4 h-4 ml-2" />
+              {language === 'he' ? 'EN' : 'עב'}
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center space-x-2">
+          <div className="lg:hidden flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleLanguage}
-              className="hover-lift"
+              className="text-green-800"
             >
-              <Globe className="w-4 h-4" />
+              <Globe className="w-5 h-5" />
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
-              className="hover-lift"
+              className="text-green-800"
             >
               <AnimatePresence mode="wait">
                 {isOpen ? (
@@ -118,7 +130,7 @@ const EnhancedNavigation = () => {
                     animate={{ rotate: 0 }}
                     exit={{ rotate: 90 }}
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-6 h-6" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -127,7 +139,7 @@ const EnhancedNavigation = () => {
                     animate={{ rotate: 0 }}
                     exit={{ rotate: -90 }}
                   >
-                    <Menu className="w-5 h-5" />
+                    <Menu className="w-6 h-6" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -142,27 +154,30 @@ const EnhancedNavigation = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden mt-4 bg-background/95 backdrop-blur-md rounded-lg border border-border shadow-elegant"
+              className="lg:hidden mt-4 bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden"
             >
-              <div className="p-4 space-y-2">
+              <div className="p-4 space-y-1">
                 {navItems.map((item, index) => (
                   <motion.button
                     key={item.href}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: language === 'he' ? 20 : -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: index * 0.05 }}
                     onClick={() => scrollToSection(item.href)}
-                    className="block w-full text-right px-4 py-3 rounded-lg text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
+                    className={`block w-full px-4 py-3 rounded-lg text-gray-700 hover:text-green-800 hover:bg-green-50 transition-all duration-300 font-medium ${language === 'he' ? 'text-right' : 'text-left'}`}
                   >
                     {item.label}
                   </motion.button>
                 ))}
                 
-                <div className="border-t border-border pt-4 mt-4">
-                  <div className="flex items-center justify-center space-x-2 text-primary font-semibold">
-                    <Phone className="w-4 h-4" />
+                <div className="border-t border-gray-200 pt-4 mt-4">
+                  <a 
+                    href="tel:055-27-399-27"
+                    className="flex items-center justify-center gap-2 text-green-800 font-semibold bg-green-50 px-4 py-3 rounded-lg hover:bg-green-100 transition-colors"
+                  >
+                    <Phone className="w-5 h-5" />
                     <span>055-27-399-27</span>
-                  </div>
+                  </a>
                 </div>
               </div>
             </motion.div>
