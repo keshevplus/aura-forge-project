@@ -16,22 +16,21 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700" aria-label="Loading"></div>
       </div>
     )
   }
 
-  // Show admin dashboard if user is logged in and is admin
+  // Admin routes
   if (user && isAdmin) {
     return <AdminDashboard />
   }
 
-  // Show login if user is logged in but not admin
   if (user && !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center p-6">
           <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
           <p className="text-muted-foreground">You don't have admin privileges.</p>
         </div>
@@ -39,37 +38,25 @@ const Index = () => {
     )
   }
 
-  // Check if accessing admin route
   if (window.location.pathname === '/admin' || window.location.search.includes('admin')) {
     return <AdminLogin />
   }
 
-  // Show main medical website
+  // Main public website
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <MedicalHero />
-      <AboutSection />
       <ServicesSection />
       <ADHDInfoSection />
-      <section id="process" className="py-20 bg-muted/30" dir={language === 'he' ? 'rtl' : 'ltr'}>
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6 gradient-text">
-            {language === 'he' ? 'תהליך האבחון המקצועי' : 'Professional Diagnosis Process'}
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            {language === 'he' 
-              ? 'תהליך מקיף ומקצועי הכולל הערכה רב-תחומית על ידי צוות מומחים'
-              : 'Comprehensive and professional process including multidisciplinary assessment by expert team'
-            }
-          </p>
-        </div>
-      </section>
       <FAQSection />
       <ContactSection />
       
       {/* Footer */}
-      <footer className="bg-foreground text-background py-8 px-4">
-        <div className="max-w-6xl mx-auto text-center" dir={language === 'he' ? 'rtl' : 'ltr'}>
+      <footer 
+        className="bg-green-900 text-white py-8 px-4"
+        dir={language === 'he' ? 'rtl' : 'ltr'}
+      >
+        <div className="container mx-auto text-center">
           <p className="text-sm opacity-80">{t('footer.rights')}</p>
         </div>
       </footer>

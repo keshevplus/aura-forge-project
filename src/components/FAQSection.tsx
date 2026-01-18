@@ -1,105 +1,150 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLanguage } from '@/hooks/useLanguage';
+import { Section, SectionHeader } from '@/components/layout/Section';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { contentApi, useContent } from '@/lib/content';
+import { cn } from '@/lib/utils';
 
-const FAQSection = () => {
-  const { language } = useLanguage();
+/**
+ * FAQSection - Accessible FAQ with progressive disclosure
+ * 
+ * UX Improvements:
+ * - Progressive disclosure reduces cognitive load
+ * - Large touch targets for accordion triggers
+ * - Semantic HTML with proper ARIA
+ * - Data-driven content from API
+ * - Mobile-optimized typography and spacing
+ */
 
-  const faqs = language === 'he' ? [
-    {
-      question: 'מה זה ADHD?',
-      answer: 'ADHD (הפרעת קשב וריכוז) היא הפרעה נוירו-התפתחותית הפוגעת ביכולת הריכוז, הקשב והשליטה בדחפים. ההפרעה מתחילה בגיל הילדות ויכולה להמשיך עד לבגרות.'
-    },
-    {
-      question: 'איך נראה תהליך האבחון?',
-      answer: 'תהליך האבחון כולל ראיון מקיף, שאלונים סטנדרטיים, בדיקות קוגניטיביות ולעיתים צילומי מוח. התהליך נמשך כמה פגישות ומבוצע על ידי צוות מקצועי.'
-    },
-    {
-      question: 'האם יש טיפול ב-ADHD?',
-      answer: 'כן, קיימים טיפולים יעילים ל-ADHD כולל טיפול תרופתי, טיפול התנהגותי, הדרכת הורים ותמיכה חינוכית. הטיפול מותאם אישית לכל מטופל.'
-    },
-    {
-      question: 'בגיל איזה ניתן לבצע אבחון?',
-      answer: 'ניתן לבצע אבחון ADHD החל מגיל 4-5 שנים. עם זאת, במקרים רבים האבחון מתבצע בגיל בית הספר היסודי כאשר הדרישות לריכוז גבוהות יותר.'
-    },
-    {
-      question: 'כמה זמן לוקח האבחון?',
-      answer: 'תהליך האבחון נמשך בדרך כלל 2-4 פגישות על פני מספר שבועות. הזמן תלוי במורכבות המקרה ובשיתוף הפעולה של המטופל והמשפחה.'
-    }
-  ] : [
-    {
-      question: 'What is ADHD?',
-      answer: 'ADHD (Attention Deficit Hyperactivity Disorder) is a neurodevelopmental disorder affecting concentration, attention and impulse control. The disorder begins in childhood and can continue into adulthood.'
-    },
-    {
-      question: 'What does the diagnosis process look like?',
-      answer: 'The diagnosis process includes comprehensive interviews, standardized questionnaires, cognitive tests and sometimes brain imaging. The process takes several sessions and is performed by a professional team.'
-    },
-    {
-      question: 'Is there treatment for ADHD?',
-      answer: 'Yes, there are effective treatments for ADHD including medication, behavioral therapy, parent training and educational support. Treatment is personalized for each patient.'
-    },
-    {
-      question: 'At what age can diagnosis be performed?',
-      answer: 'ADHD diagnosis can be performed from age 4-5 years. However, in many cases diagnosis is made during elementary school age when concentration demands are higher.'
-    },
-    {
-      question: 'How long does the diagnosis take?',
-      answer: 'The diagnosis process usually takes 2-4 sessions over several weeks. The time depends on case complexity and cooperation of the patient and family.'
-    }
-  ];
+const FAQSection: React.FC = () => {
+  const { t, language } = useLanguage();
+  const isRTL = language === 'he';
+  
+  // Fetch FAQs from API
+  const { data: faqs, loading } = useContent(
+    () => contentApi.getFAQs(),
+    []
+  );
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <Section 
+        id="faq" 
+        background="muted"
+        dir={isRTL ? 'rtl' : 'ltr'}
+        aria-labelledby="faq-heading"
+      >
+        <SectionHeader 
+          title={t('nav.faq')} 
+          titleId="faq-heading"
+        />
+        <div className="max-w-3xl mx-auto space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-16 bg-white rounded-lg animate-pulse" />
+          ))}
+        </div>
+      </Section>
+    );
+  }
 
   return (
-    <section id="faq" className="py-20 bg-background" dir={language === 'he' ? 'rtl' : 'ltr'}>
-      <div className="max-w-4xl mx-auto px-4">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6 gradient-text">
-            {language === 'he' ? 'שאלות נפוצות' : 'Frequently Asked Questions'}
-          </h2>
-          <div className="w-24 h-1 bg-gradient-primary mx-auto rounded-full" />
-        </motion.div>
+    <Section 
+      id="faq" 
+      background="muted"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      aria-labelledby="faq-heading"
+    >
+      <SectionHeader 
+        title={t('nav.faq')} 
+        subtitle={isRTL 
+          ? 'מצאו תשובות לשאלות הנפוצות ביותר על אבחון וטיפול ב-ADHD'
+          : 'Find answers to the most common questions about ADHD diagnosis and treatment'
+        }
+        titleId="faq-heading"
+      />
 
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
+      <motion.div
+        className="max-w-3xl mx-auto"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+      >
+        <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
+          {faqs?.map((faq) => (
+            <AccordionItem
+              key={faq.id}
+              value={faq.id}
+              className={cn(
+                "bg-white rounded-lg border border-gray-100",
+                "shadow-sm hover:shadow-md transition-shadow",
+                "overflow-hidden"
+              )}
+            >
+              <AccordionTrigger
+                className={cn(
+                  "px-4 sm:px-6 py-4 sm:py-5",
+                  "text-left hover:no-underline",
+                  "min-h-[56px] sm:min-h-[64px]",
+                  // Ensure touch target is large enough
+                  "[&>svg]:w-5 [&>svg]:h-5 [&>svg]:shrink-0",
+                  "[&>svg]:ml-4 [&>svg]:text-green-700",
+                  isRTL && "[&>svg]:ml-0 [&>svg]:mr-4"
+                )}
               >
-                <AccordionItem 
-                  value={`item-${index}`} 
-                  className="bg-muted/30 rounded-xl border-0 shadow-elegant px-6 hover-lift"
-                >
-                  <AccordionTrigger className="text-left hover:no-underline py-6">
-                    <span className="font-semibold text-foreground">
-                      {faq.question}
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-6 text-muted-foreground leading-relaxed">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              </motion.div>
-            ))}
-          </Accordion>
-        </motion.div>
-      </div>
-    </section>
+                <span className="text-base sm:text-lg font-medium text-foreground leading-snug pr-4">
+                  {faq.question[language]}
+                </span>
+              </AccordionTrigger>
+              
+              <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                  {faq.answer[language]}
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </motion.div>
+
+      {/* Additional Help CTA */}
+      <motion.div
+        className="text-center mt-10 sm:mt-12"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        viewport={{ once: true }}
+      >
+        <p className="text-base text-muted-foreground">
+          {isRTL 
+            ? 'לא מצאתם תשובה לשאלה שלכם?' 
+            : "Didn't find the answer you're looking for?"}
+        </p>
+        <a
+          href="#contact"
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className={cn(
+            "inline-flex items-center justify-center mt-2 text-green-700 font-medium",
+            "underline underline-offset-4",
+            "hover:text-green-800 transition-colors",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2",
+            "min-h-[44px]"
+          )}
+        >
+          {isRTL ? 'צרו איתנו קשר' : 'Contact us'}
+        </a>
+      </motion.div>
+    </Section>
   );
 };
 

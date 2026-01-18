@@ -1,347 +1,413 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
-import { Send, MapPin, Phone, Mail, Calendar, CheckCircle, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
+import { Section, SectionHeader } from '@/components/layout/Section';
+import { AccessibleButton } from '@/components/ui/accessible-button';
+import { contentApi, useContent, type ContactInfo } from '@/lib/content';
+import { cn } from '@/lib/utils';
+import { z } from 'zod';
 
-const ContactSection = () => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
+/**
+ * ContactSection - Accessible, mobile-first contact form
+ * 
+ * UX Improvements:
+ * - Single-column form on mobile
+ * - Large input fields with proper labels
+ * - Clear validation messages
+ * - Touch-friendly buttons (min 44px)
+ * - Progressive disclosure
+ * - Data-driven contact info from API
+ */
 
+// Validation schema
+const contactSchema = z.object({
+  name: z.string().trim().min(2, { message: 'Name must be at least 2 characters' }).max(100),
+  phone: z.string().trim().min(9, { message: 'Please enter a valid phone number' }).max(20),
+  email: z.string().trim().email({ message: 'Please enter a valid email' }).optional().or(z.literal('')),
+  message: z.string().trim().min(10, { message: 'Message must be at least 10 characters' }).max(1000),
+});
+
+type ContactFormData = z.infer<typeof contactSchema>;
+
+// Icon mapping
+const iconMap: Record<string, React.FC<{ className?: string }>> = {
+  phone: Phone,
+  email: Mail,
+  address: MapPin,
+  hours: Clock,
+};
+
+const ContactSection: React.FC = () => {
+  const { t, language } = useLanguage();
   const { toast } = useToast();
+  const isRTL = language === 'he';
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-    budget: "",
-    timeline: ""
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: '',
+    phone: '',
+    email: '',
+    message: '',
   });
+  const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
 
-  const contactInfo = [
-    {
-      icon: Mail,
-      title: "Email",
-      value: "hello@example.com",
-      description: "Send me an email anytime"
-    },
-    {
-      icon: Phone,
-      title: "Phone",
-      value: "+1 (555) 123-4567",
-      description: "Available Mon-Fri 9AM-6PM PST"
-    },
-    {
-      icon: MapPin,
-      title: "Location",
-      value: "San Francisco, CA",
-      description: "Available for remote work globally"
-    },
-    {
-      icon: Calendar,
-      title: "Response Time",
-      value: "24-48 hours",
-      description: "I'll get back to you quickly"
-    }
-  ];
+  // Fetch contact info from API
+  const { data: contactInfo } = useContent(
+    () => contentApi.getContactInfo(),
+    []
+  );
 
-  const projectTypes = [
-    "Web Application",
-    "Mobile App",
-    "E-commerce",
-    "Landing Page",
-    "Dashboard",
-    "API Development",
-    "Consulting",
-    "Other"
-  ];
-
-  const budgetRanges = [
-    "< $5,000",
-    "$5,000 - $15,000",
-    "$15,000 - $30,000",
-    "$30,000 - $50,000",
-    "$50,000+",
-    "Let's Discuss"
-  ];
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name as keyof ContactFormData]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    
+    // Validate form
+    const result = contactSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof ContactFormData, string>> = {};
+      result.error.errors.forEach(err => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as keyof ContactFormData] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
 
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setIsSubmitting(true);
+    
+    try {
+      const validData = {
+        name: result.data.name,
+        phone: result.data.phone,
+        email: result.data.email,
+        message: result.data.message,
+      };
+      const response = await contentApi.submitContactForm(validData);
+      
+      if (response.success) {
+        setIsSubmitted(true);
+        toast({
+          title: isRTL ? 'הודעה נשלחה בהצלחה!' : 'Message sent successfully!',
+          description: isRTL ? 'נחזור אליכם בהקדם' : "We'll get back to you soon",
+        });
+        setFormData({ name: '', phone: '', email: '', message: '' });
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
       toast({
-        title: "Message sent successfully!",
-        description: "I'll get back to you within 24-48 hours.",
-        duration: 5000,
+        title: isRTL ? 'שגיאה בשליחה' : 'Error sending message',
+        description: isRTL ? 'אנא נסו שוב' : 'Please try again',
+        variant: 'destructive',
       });
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-        budget: "",
-        timeline: ""
-      });
-    }, 2000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const isFormValid = formData.name && formData.email && formData.subject && formData.message;
-
   return (
-    <section id="contact" className="py-20 bg-secondary/30">
-      <div className="max-w-7xl mx-auto px-6">
+    <Section 
+      id="contact" 
+      background="muted"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      aria-labelledby="contact-heading"
+    >
+      <SectionHeader 
+        title={t('contact.title')} 
+        subtitle={isRTL 
+          ? 'נשמח לשמוע מכם ולענות על כל שאלה'
+          : "We'd love to hear from you and answer any questions"
+        }
+        titleId="contact-heading"
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        {/* Contact Information */}
         <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          initial={{ opacity: 0, x: isRTL ? 30 : -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="space-y-6"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-clip-text text-transparent gradient-primary">
-            Let's Work Together
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Ready to bring your ideas to life? I'm always excited to work on new projects and help 
-            create amazing digital experiences. Let's discuss your vision and make it happen.
-          </p>
-        </motion.div>
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              {isRTL ? 'פרטי התקשרות' : 'Contact Information'}
+            </h3>
+            <p className="text-muted-foreground leading-relaxed">
+              {isRTL 
+                ? 'צרו איתנו קשר בכל דרך שנוחה לכם - נשמח לעזור'
+                : 'Reach out to us in any way convenient for you - we\'re here to help'}
+            </p>
+          </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-8"
-          >
-            <div>
-              <h3 className="text-2xl font-semibold mb-6">Get in Touch</h3>
-              <p className="text-muted-foreground leading-relaxed mb-8">
-                Whether you have a project in mind, need consulting, or just want to chat about 
-                technology, I'd love to hear from you. Here's how you can reach me:
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {contactInfo.map((info, index) => (
+          {/* Contact Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {contactInfo?.map((info, index) => {
+              const IconComponent = iconMap[info.type] || Phone;
+              
+              return (
                 <motion.div
-                  key={info.title}
+                  key={info.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true }}
                 >
-                  <Card className="gradient-card shadow-soft border-0 hover-lift p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="p-3 rounded-lg bg-primary/10">
-                        <info.icon className="w-6 h-6 text-primary" />
+                  <Card className="h-full border-gray-100 hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 sm:p-5">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-green-50 shrink-0">
+                          <IconComponent className="w-5 h-5 text-green-700" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                            {info.label[language]}
+                          </h4>
+                          {info.type === 'phone' ? (
+                            <a 
+                              href={`tel:${info.value}`}
+                              className="font-semibold text-green-700 hover:text-green-800 transition-colors block truncate"
+                            >
+                              {info.value}
+                            </a>
+                          ) : info.type === 'email' ? (
+                            <a 
+                              href={`mailto:${info.value}`}
+                              className="font-semibold text-green-700 hover:text-green-800 transition-colors block truncate"
+                            >
+                              {info.value}
+                            </a>
+                          ) : (
+                            <p className="font-semibold text-foreground truncate">
+                              {info.value}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold mb-1">{info.title}</h4>
-                        <p className="font-medium text-primary mb-1">{info.value}</p>
-                        <p className="text-sm text-muted-foreground">{info.description}</p>
-                      </div>
-                    </div>
+                    </CardContent>
                   </Card>
                 </motion.div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Project Types */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <h4 className="font-semibold mb-4">What I Can Help With</h4>
-              <div className="grid grid-cols-2 gap-3">
-                {projectTypes.map((type, index) => (
-                  <motion.div
-                    key={type}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={inView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.4, delay: 0.05 * index }}
-                    className="flex items-center space-x-2"
-                  >
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span className="text-sm">{type}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
+          {/* Direct Call CTA - Prominent on mobile */}
+          <motion.a
+            href="tel:055-27-399-27"
+            className={cn(
+              "flex items-center justify-center gap-3 w-full",
+              "py-4 px-6 rounded-xl",
+              "bg-green-700 text-white font-semibold text-lg",
+              "hover:bg-green-800 transition-colors",
+              "shadow-md hover:shadow-lg",
+              "min-h-[56px]",
+              "lg:hidden" // Only show prominently on mobile
+            )}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            viewport={{ once: true }}
           >
-            <Card className="gradient-card shadow-strong border-0">
-              <CardHeader>
-                <CardTitle className="text-2xl">Start a Conversation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="Your full name"
-                        required
-                        className="transition-smooth focus:shadow-soft"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="your@email.com"
-                        required
-                        className="transition-smooth focus:shadow-soft"
-                      />
-                    </div>
-                  </div>
+            <Phone className="w-5 h-5" aria-hidden="true" />
+            <span>{isRTL ? 'התקשרו עכשיו' : 'Call Now'}</span>
+          </motion.a>
+        </motion.div>
 
+        {/* Contact Form */}
+        <motion.div
+          initial={{ opacity: 0, x: isRTL ? -30 : 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+        >
+          <Card className="border-gray-100 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">
+                {isRTL ? 'השאירו פרטים ונחזור אליכם' : 'Leave your details and we\'ll get back to you'}
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent>
+              {isSubmitted ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-8"
+                >
+                  <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">
+                    {isRTL ? 'תודה שפניתם אלינו!' : 'Thank you for contacting us!'}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {isRTL ? 'נחזור אליכם בהקדם האפשרי' : "We'll get back to you as soon as possible"}
+                  </p>
+                  <AccessibleButton
+                    variant="outline"
+                    className="mt-6"
+                    onClick={() => setIsSubmitted(false)}
+                  >
+                    {isRTL ? 'שליחת הודעה נוספת' : 'Send another message'}
+                  </AccessibleButton>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                  {/* Name Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject *</Label>
+                    <Label htmlFor="name" className="text-base font-medium">
+                      {isRTL ? 'שם מלא' : 'Full Name'} *
+                    </Label>
                     <Input
-                      id="subject"
-                      name="subject"
-                      value={formData.subject}
+                      id="name"
+                      name="name"
+                      type="text"
+                      value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Project inquiry, collaboration, etc."
+                      placeholder={isRTL ? 'הכניסו את שמכם המלא' : 'Enter your full name'}
                       required
-                      className="transition-smooth focus:shadow-soft"
+                      aria-required="true"
+                      aria-invalid={!!errors.name}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
+                      className={cn(
+                        "h-12 text-base",
+                        errors.name && "border-red-500 focus-visible:ring-red-500"
+                      )}
                     />
+                    {errors.name && (
+                      <p id="name-error" className="text-sm text-red-600" role="alert">
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="budget">Budget Range</Label>
-                      <select
-                        id="budget"
-                        name="budget"
-                        value={formData.budget}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm transition-smooth focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                      >
-                        <option value="">Select budget range</option>
-                        {budgetRanges.map(range => (
-                          <option key={range} value={range}>{range}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="timeline">Project Timeline</Label>
-                      <Input
-                        id="timeline"
-                        name="timeline"
-                        value={formData.timeline}
-                        onChange={handleInputChange}
-                        placeholder="e.g., 2-3 months"
-                        className="transition-smooth focus:shadow-soft"
-                      />
-                    </div>
-                  </div>
-
+                  {/* Phone Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
+                    <Label htmlFor="phone" className="text-base font-medium">
+                      {isRTL ? 'טלפון' : 'Phone'} *
+                    </Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      inputMode="tel"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder={isRTL ? '050-000-0000' : '050-000-0000'}
+                      required
+                      aria-required="true"
+                      aria-invalid={!!errors.phone}
+                      aria-describedby={errors.phone ? 'phone-error' : undefined}
+                      className={cn(
+                        "h-12 text-base",
+                        errors.phone && "border-red-500 focus-visible:ring-red-500"
+                      )}
+                    />
+                    {errors.phone && (
+                      <p id="phone-error" className="text-sm text-red-600" role="alert">
+                        {errors.phone}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email Field - Optional */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-base font-medium">
+                      {isRTL ? 'דוא"ל (אופציונלי)' : 'Email (optional)'}
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      inputMode="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder={isRTL ? 'your@email.com' : 'your@email.com'}
+                      aria-invalid={!!errors.email}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                      className={cn(
+                        "h-12 text-base",
+                        errors.email && "border-red-500 focus-visible:ring-red-500"
+                      )}
+                    />
+                    {errors.email && (
+                      <p id="email-error" className="text-sm text-red-600" role="alert">
+                        {errors.email}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Message Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-base font-medium">
+                      {isRTL ? 'הודעה' : 'Message'} *
+                    </Label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleInputChange}
-                      placeholder="Tell me about your project, goals, and any specific requirements..."
-                      rows={6}
+                      placeholder={isRTL ? 'ספרו לנו במה נוכל לעזור...' : 'Tell us how we can help...'}
+                      rows={4}
                       required
-                      className="transition-smooth focus:shadow-soft resize-none"
+                      aria-required="true"
+                      aria-invalid={!!errors.message}
+                      aria-describedby={errors.message ? 'message-error' : undefined}
+                      className={cn(
+                        "text-base resize-none",
+                        errors.message && "border-red-500 focus-visible:ring-red-500"
+                      )}
                     />
+                    {errors.message && (
+                      <p id="message-error" className="text-sm text-red-600" role="alert">
+                        {errors.message}
+                      </p>
+                    )}
                   </div>
 
-                  <Button
+                  {/* Submit Button */}
+                  <AccessibleButton
                     type="submit"
-                    disabled={!isFormValid || isSubmitting}
-                    className="w-full gradient-primary text-primary-foreground hover-lift font-medium py-6"
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    loading={isSubmitting}
+                    loadingText={isRTL ? 'שולח...' : 'Sending...'}
+                    className="mt-6"
                   >
-                    {isSubmitting ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                    ) : (
-                      <>
-                        <Send className="w-5 h-5 mr-2" />
-                        Send Message
-                      </>
-                    )}
-                  </Button>
+                    <Send className="w-5 h-5" aria-hidden="true" />
+                    {isRTL ? 'שליחת הודעה' : 'Send Message'}
+                  </AccessibleButton>
 
-                  <p className="text-xs text-muted-foreground text-center">
-                    By sending this message, you agree to my privacy policy. 
-                    I'll never share your information with third parties.
+                  <p className="text-xs text-muted-foreground text-center mt-4">
+                    {isRTL 
+                      ? 'המידע שלכם מאובטח ולא ישותף עם צדדים שלישיים'
+                      : 'Your information is secure and will not be shared with third parties'}
                   </p>
                 </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-
-        {/* Additional Contact CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="text-center mt-16"
-        >
-          <Card className="gradient-card shadow-medium border-0 max-w-2xl mx-auto">
-            <CardContent className="p-8">
-              <h3 className="text-xl font-semibold mb-4">
-                Prefer a Quick Chat?
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Sometimes it's easier to discuss projects over a call. 
-                I'm available for 15-minute discovery calls to understand your needs better.
-              </p>
-              <Button
-                variant="outline"
-                className="border-primary/30 hover:bg-primary/10 font-medium"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Schedule a Call
-              </Button>
+              )}
             </CardContent>
           </Card>
         </motion.div>
       </div>
-    </section>
+    </Section>
   );
 };
 
