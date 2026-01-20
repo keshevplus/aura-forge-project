@@ -55,30 +55,29 @@ const MedicalHero: React.FC = () => {
               {/* Text Content */}
               <div className="w-full lg:w-1/2 order-2 lg:order-1 text-center lg:text-start">
                 
-                {/* Welcome Text */}
+                {/* Logo - Centered and larger */}
+                <motion.div
+                  className="flex justify-center lg:justify-start mb-6"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <img
+                    src={logo}
+                    alt={isRTL ? 'קשב פלוס' : 'Keshev Plus'}
+                    className="w-48 sm:w-56 md:w-64 lg:w-80 xl:w-96 h-auto drop-shadow-md"
+                  />
+                </motion.div>
+                
+                {/* Welcome Text - Without duplicate clinic name */}
                 <motion.h1 
                   className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-green-800 mb-4 leading-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  {isRTL ? 'ברוכים הבאים למרפאת' : 'Welcome to'}
-                  <br />
-                  <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-                    {isRTL ? '"קשב פלוס"' : '"Keshev Plus" Clinic'}
-                  </span>
+                  {isRTL ? 'ברוכים הבאים למרפאה' : 'Welcome to the Clinic'}
                 </motion.h1>
-                
-                {/* Logo */}
-                <motion.img
-                  src={logo}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-40 sm:w-48 md:w-56 lg:w-64 mb-6 drop-shadow-md mx-auto lg:mx-0"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                />
 
                 {/* Typing Animation Text */}
                 <motion.p 

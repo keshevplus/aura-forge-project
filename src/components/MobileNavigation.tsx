@@ -118,7 +118,7 @@ const MobileNavigation: React.FC = () => {
       >
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
+            {/* Logo - Larger on desktop */}
             <button
               onClick={() => scrollToSection('#home')}
               className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 rounded-lg"
@@ -126,8 +126,8 @@ const MobileNavigation: React.FC = () => {
             >
               <img 
                 src={logo} 
-                alt={language === 'he' ? 'קשב פלוס - לוגו' : 'Keshev Plus - Logo'}
-                className="h-10 md:h-12 w-auto"
+                alt={language === 'he' ? 'קשב פלוס' : 'Keshev Plus'}
+                className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto"
               />
             </button>
 
