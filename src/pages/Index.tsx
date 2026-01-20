@@ -46,6 +46,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <MedicalHero />
+      <AboutSection />
       <ServicesSection />
       <ADHDInfoSection />
       <FAQSection />
