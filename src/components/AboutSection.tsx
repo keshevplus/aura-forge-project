@@ -22,15 +22,17 @@ const iconMap: Record<string, React.ElementType> = {
 const AboutSection: React.FC = () => {
   const { language } = useLanguage();
   const isRTL = language === 'he';
-  const { data: content, loading } = useContent<AboutContent>(
-    () => contentApi.getAboutContent(),
-    []
-  );
-
+  
+  // All hooks must be called before any conditional returns
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+  
+  const { data: content, loading } = useContent<AboutContent>(
+    () => contentApi.getAboutContent(),
+    []
+  );
 
   if (loading || !content) {
     return (
