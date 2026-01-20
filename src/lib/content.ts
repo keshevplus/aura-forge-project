@@ -170,10 +170,30 @@ const mockProcessSteps: ProcessStep[] = [
 ];
 
 const mockContactInfo: ContactInfo[] = [
-  { id: '1', type: 'phone', value: '055-27-399-27', label: { he: 'טלפון', en: 'Phone' } },
-  { id: '2', type: 'email', value: 'info@keshevplus.co.il', label: { he: 'דוא"ל', en: 'Email' } },
-  { id: '3', type: 'address', value: 'ישראל', label: { he: 'מיקום', en: 'Location' } },
-  { id: '4', type: 'hours', value: 'א\'-ה\' 09:00-18:00', label: { he: 'שעות פעילות', en: 'Hours' } }
+  { 
+    id: '1', 
+    type: 'phone', 
+    value: '055-27-399-27', 
+    label: { he: 'טלפון', en: 'Phone' } 
+  },
+  { 
+    id: '2', 
+    type: 'email', 
+    value: 'Keshevplus@gmail.com', 
+    label: { he: 'דוא"ל', en: 'Email' } 
+  },
+  { 
+    id: '3', 
+    type: 'address', 
+    value: 'אלי כהן 6, באר שבע', 
+    label: { he: 'כתובת', en: 'Address' } 
+  },
+  { 
+    id: '4', 
+    type: 'hours', 
+    value: 'א\'-ה\' 09:00-19:00', 
+    label: { he: 'שעות פעילות', en: 'Business Hours' } 
+  }
 ];
 
 const mockFAQs: FAQItem[] = [
