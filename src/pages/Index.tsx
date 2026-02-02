@@ -9,10 +9,11 @@ import ServicesSection from "@/components/ServicesSection"
 import ADHDInfoSection from "@/components/ADHDInfoSection"
 import FAQSection from "@/components/FAQSection"
 import ContactSection from "@/components/ContactSection"
+import Footer from "@/components/Footer"
 
 const Index = () => {
   const { user, loading, isAdmin } = useAuth()
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
 
   if (loading) {
     return (
@@ -51,16 +52,7 @@ const Index = () => {
       <ADHDInfoSection />
       <FAQSection />
       <ContactSection />
-      
-      {/* Footer */}
-      <footer 
-        className="bg-green-900 text-white py-8 px-4"
-        dir={language === 'he' ? 'rtl' : 'ltr'}
-      >
-        <div className="container mx-auto text-center">
-          <p className="text-sm opacity-80">{t('footer.rights')}</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
