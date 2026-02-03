@@ -18,8 +18,8 @@ const Footer: React.FC = () => {
 
   const contactInfo = {
     phone: '055-27-399-27',
-    email: 'Keshevplus@gmail.com',
-    address: isRTL ? 'אלי כהן 6, באר שבע' : '6 Eli Cohen St., Beer Sheva',
+    email: 'dr@keshevplus.co.il',
+    address: isRTL ? 'יגאל אלון 94, תל אביב' : '94 Yigal Alon St., Tel Aviv',
     hours: isRTL ? 'א\'-ה\' 09:00-19:00' : 'Sun-Thu 09:00-19:00',
   };
 
