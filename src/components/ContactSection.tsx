@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Car, Navigation, Train } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +41,140 @@ const contactSchema = z.object({
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
+
+// Arrival & Parking Modal Component
+const ArrivalParkingModal: React.FC<{ isRTL: boolean }> = ({ isRTL }) => {
+  const [open, setOpen] = useState(false);
+  
+  const clinicAddress = 'אלי כהן 6, באר שבע';
+  const wazeLink = `https://waze.com/ul?q=${encodeURIComponent(clinicAddress)}&navigate=yes`;
+  const googleMapsLink = `https://maps.google.com/?q=${encodeURIComponent(clinicAddress)}`;
+  
+  return (
+    <>
+      <motion.button
+        onClick={() => setOpen(true)}
+        className={cn(
+          "flex items-center justify-center gap-3 w-full",
+          "py-4 px-6 rounded-xl",
+          "bg-primary text-primary-foreground font-semibold text-lg",
+          "hover:bg-primary/90 transition-colors",
+          "shadow-md hover:shadow-lg",
+          "min-h-[56px]"
+        )}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        viewport={{ once: true }}
+      >
+        <Car className="w-5 h-5" aria-hidden="true" />
+        <span>{isRTL ? 'דרכי הגעה ואפשרויות חניה' : 'Directions & Parking'}</span>
+      </motion.button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent 
+          className="max-w-md sm:max-w-lg"
+          dir={isRTL ? 'rtl' : 'ltr'}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-xl text-primary flex items-center gap-2">
+              <Car className="w-5 h-5" />
+              {isRTL ? 'דרכי הגעה ואפשרויות חניה' : 'Directions & Parking'}
+            </DialogTitle>
+            <DialogDescription>
+              {isRTL 
+                ? 'מידע על הגעה למרפאה וחניה באזור'
+                : 'Information about arriving at the clinic and parking nearby'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-4">
+            {/* Address */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                <MapPin className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">
+                  {isRTL ? 'כתובת המרפאה' : 'Clinic Address'}
+                </h4>
+                <p className="text-muted-foreground">
+                  {isRTL ? 'אלי כהן 6, באר שבע' : '6 Eli Cohen St., Beer Sheva'}
+                </p>
+              </div>
+            </div>
+
+            {/* Parking Info */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                <Car className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">
+                  {isRTL ? 'חניה' : 'Parking'}
+                </h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {isRTL 
+                    ? 'ישנה חניה חינמית ברחוב ובסביבה. מומלץ להגיע מספר דקות לפני הפגישה לצורך מציאת חניה.'
+                    : 'Free street parking is available in the area. We recommend arriving a few minutes early to find parking.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Public Transport */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                <Train className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">
+                  {isRTL ? 'תחבורה ציבורית' : 'Public Transport'}
+                </h4>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {isRTL 
+                    ? 'המרפאה נמצאת במרחק הליכה קצר מתחנת הרכבת באר שבע מרכז. קווי אוטובוס רבים עוברים בסמוך.'
+                    : 'The clinic is a short walk from Beer Sheva Central train station. Multiple bus lines pass nearby.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <a
+                href={wazeLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "flex items-center justify-center gap-2 py-3 px-4 rounded-lg",
+                  "bg-[#33CCFF] text-white font-medium",
+                  "hover:bg-[#2bb8e8] transition-colors",
+                  "min-h-[48px]"
+                )}
+              >
+                <Navigation className="w-4 h-4" />
+                Waze
+              </a>
+              <a
+                href={googleMapsLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "flex items-center justify-center gap-2 py-3 px-4 rounded-lg",
+                  "bg-[#4285F4] text-white font-medium",
+                  "hover:bg-[#3574d4] transition-colors",
+                  "min-h-[48px]"
+                )}
+              >
+                <MapPin className="w-4 h-4" />
+                Google Maps
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
 // Icon mapping
 const iconMap: Record<string, React.FC<{ className?: string }>> = {
@@ -265,6 +406,9 @@ const ContactSection: React.FC = () => {
             </svg>
             <span>{isRTL ? 'שלחו הודעה בוואטסאפ' : 'Message on WhatsApp'}</span>
           </motion.a>
+
+          {/* Arrival & Parking Button */}
+          <ArrivalParkingModal isRTL={isRTL} />
         </motion.div>
 
         {/* Contact Form */}
