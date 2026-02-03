@@ -179,13 +179,13 @@ const mockContactInfo: ContactInfo[] = [
   { 
     id: '2', 
     type: 'email', 
-    value: 'Keshevplus@gmail.com', 
+    value: 'dr@keshevplus.co.il', 
     label: { he: 'דוא"ל', en: 'Email' } 
   },
   { 
     id: '3', 
     type: 'address', 
-    value: 'אלי כהן 6, באר שבע', 
+    value: 'יגאל אלון 94, תל אביב (מגדלי אלון 1, קומה 12, משרד 1202)', 
     label: { he: 'כתובת', en: 'Address' } 
   },
   { 

@@ -46,7 +46,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 const ArrivalParkingModal: React.FC<{ isRTL: boolean }> = ({ isRTL }) => {
   const [open, setOpen] = useState(false);
   
-  const clinicAddress = 'אלי כהן 6, באר שבע';
+  const clinicAddress = 'יגאל אלון 94, תל אביב';
   const wazeLink = `https://waze.com/ul?q=${encodeURIComponent(clinicAddress)}&navigate=yes`;
   const googleMapsLink = `https://maps.google.com/?q=${encodeURIComponent(clinicAddress)}`;
   
@@ -98,8 +98,12 @@ const ArrivalParkingModal: React.FC<{ isRTL: boolean }> = ({ isRTL }) => {
                 <h4 className="font-semibold text-foreground mb-1">
                   {isRTL ? 'כתובת המרפאה' : 'Clinic Address'}
                 </h4>
-                <p className="text-muted-foreground">
-                  {isRTL ? 'אלי כהן 6, באר שבע' : '6 Eli Cohen St., Beer Sheva'}
+                <p className="text-muted-foreground text-sm">
+                  {isRTL ? 'יגאל אלון 94, תל אביב' : '94 Yigal Alon St., Tel Aviv'}
+                  <br />
+                  <span className="text-xs">
+                    {isRTL ? 'מגדלי אלון 1, קומה 12, משרד 1202' : 'Alon Towers 1, Floor 12, Office 1202'}
+                  </span>
                 </p>
               </div>
             </div>
